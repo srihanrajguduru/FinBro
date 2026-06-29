@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: finbro
+          POSTGRES_PASSWORD: finbro
+          POSTGRES_DB: finbro
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: server
+        run: |
+          pip install -r requirements.txt
+          pip install email-validator
+
+      - name: Ruff check
+        working-directory: server
+        run: ruff check .
+
+      - name: Run tests
+        working-directory: server
+        env:
+          DATABASE_URL: postgresql+asyncpg://finbro:finbro@localhost:5432/finbro
+        run: pytest tests/ -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm install
+
+      - name: ESLint
+        working-directory: web
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: npm run build

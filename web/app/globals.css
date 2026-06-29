@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0d5c4a;
+  --color-secondary: #ff6b6b;
+  --color-background: #faf9f7;
+  --color-foreground: #0d3d2f;
+  --color-card: rgba(255, 255, 255, 0.7);
+  --color-muted: #e8e6e3;
+  --color-muted-foreground: #5a7a6e;
+  --color-border: rgba(13, 92, 74, 0.15);
+  --color-chart-1: #0d5c4a;
+  --color-chart-2: #ff6b6b;
+  --color-chart-3: #4ecdc4;
+  --color-chart-4: #ffe66d;
+  --color-chart-5: #95e1d3;
+}
+
+.dark {
+  --color-background: #0f0f0f;
+  --color-foreground: #e8f5f0;
+  --color-card: rgba(20, 20, 20, 0.7);
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #8aaea0;
+  --color-border: rgba(13, 92, 74, 0.3);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+.glass-card {
+  @apply rounded-xl border border-border bg-card backdrop-blur-md shadow-sm;
+}

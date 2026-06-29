@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: finbro
+      POSTGRES_PASSWORD: finbro
+      POSTGRES_DB: finbro
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finbro"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://finbro:finbro@postgres:5432/finbro
+      SECRET_KEY: docker-dev-secret-key
+      CORS_ORIGINS: http://localhost:3000
+      MOCK_WEB3: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
