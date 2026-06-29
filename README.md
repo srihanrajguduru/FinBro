@@ -77,22 +77,10 @@ graph TD
 4. **Database**: PostgreSQL holds transactions, goals, debts, users, and notifications, mapped cleanly with SQLAlchemy.
 
 ---
+## Demo Video
 
-## Screenshots
 
-*Placeholders for user-provided screenshots:*
-
-### Home Page
-`[Screenshot: Home Page Mockup]`
-
-### Login
-`[Screenshot: Login Interface]`
-
-### Dashboard
-`[Screenshot: Dashboard Charts and Metrics]`
-
-### Transactions
-`[Screenshot: Transaction Ledger]`
+https://github.com/user-attachments/assets/9a4928db-63de-4a53-a62a-7a100ee3dce3
 
 ---
 
