@@ -46,7 +46,7 @@ export default function ChatPage() {
     <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-2xl flex-col space-y-4">
       <div>
         <h1 className="text-3xl font-bold">AI Chat</h1>
-        <p className="text-muted-foreground">Rule-based financial assistant</p>
+        <p className="text-muted-foreground">Gemini-powered AI financial assistant</p>
       </div>
 
       <Card className="flex flex-1 flex-col overflow-hidden">

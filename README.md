@@ -13,7 +13,7 @@ FinBro is a modern, premium web application designed to help users take control 
 - **Interactive Debt Payoff Simulator**: Compare month-by-month repayment timelines and total interest differences between the **Debt Avalanche** and **Debt Snowball** strategies.
 - **Retirement Forecasting**: Run compound interest projections based on current savings, monthly contributions, and estimated annual return rates.
 - **FinBroToken (FBT) Rewards**: Gamified reward mechanism that mints ERC-20 FBT tokens on-chain (or in mock Web3 mode) upon completing savings goals.
-- **AI Financial Assistant**: Conversational assistant leveraging rule-based intent parsing to provide prompt financial guidance and platform tips.
+- **AI Financial Assistant**: Conversational assistant powered by Gemini AI (`gemini-3.1-flash`) providing prompt, personalized financial guidance and platform tips.
 - **Push Notification Center**: System alerts for limit warnings, goal completions, and on-chain reward transaction logs.
 
 ---

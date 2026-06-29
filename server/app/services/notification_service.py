@@ -137,49 +137,48 @@ INTENT_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
 
 async def process_chat(request: ChatRequest) -> ChatResponse:
     """
-    Processes chat requests using the Gemini generative API if configured,
-    otherwise falls back to rule-based intent pattern matching.
+    Processes chat requests using the Gemini generative API.
+    If the API key is not configured, prompts the user to add it.
     """
     msg = request.message.strip()
     if not msg:
         return ChatResponse(reply="Ask me about savings, debt, goals, budgets, rewards, or retirement!", intent="empty")
 
-    if settings.GEMINI_API_KEY:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-            system_instruction = (
-                "You are FinBro AI, a gamified personal finance assistant. "
-                "Help the user save smarter, crush debt, and earn FBT rewards. "
-                "Provide accurate, friendly, and concise financial advice. "
-                "The platform features savings goals (completing goal mints 100 FBT), "
-                "debt simulation (Avalanche and Snowball payoff strategies), "
-                "and retirement forecasting using compound interest. "
-                "Keep responses under 3-4 sentences whenever possible."
+    if not settings.GEMINI_API_KEY:
+        return ChatResponse(
+            reply="Gemini API Key is not configured. Please add GEMINI_API_KEY in your server/.env file.",
+            intent="missing_api_key",
+        )
+
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
+        system_instruction = (
+            "You are FinBro AI, a gamified personal finance assistant. "
+            "Help the user save smarter, crush debt, and earn FBT rewards. "
+            "Provide accurate, friendly, and concise financial advice. "
+            "The platform features savings goals (completing goal mints 100 FBT), "
+            "debt simulation (Avalanche and Snowball payoff strategies), "
+            "and retirement forecasting using compound interest. "
+            "Keep responses under 3-4 sentences whenever possible."
+        )
+        payload = {
+            "contents": [{"parts": [{"text": msg}]}],
+            "systemInstruction": {"parts": [{"text": system_instruction}]}
+        }
+        async with httpx.AsyncClient() as client:
+            res = await client.post(url, json=payload, timeout=10.0)
+
+        if res.status_code == 200:
+            data = res.json()
+            reply = data["candidates"][0]["content"]["parts"][0]["text"]
+            return ChatResponse(reply=reply, intent="gemini")
+        else:
+            return ChatResponse(
+                reply=f"Gemini API returned error: {res.status_code}. Please check your API key configuration.",
+                intent="api_error",
             )
-            payload = {
-                "contents": [{"parts": [{"text": msg}]}],
-                "systemInstruction": {"parts": [{"text": system_instruction}]}
-            }
-            async with httpx.AsyncClient() as client:
-                res = await client.post(url, json=payload, timeout=10.0)
-
-            if res.status_code == 200:
-                data = res.json()
-                reply = data["candidates"][0]["content"]["parts"][0]["text"]
-                return ChatResponse(reply=reply, intent="gemini")
-            else:
-                print(f"Gemini API returned error status: {res.status_code}, response: {res.text}")
-        except Exception as e:
-            print(f"Error calling Gemini API: {e}")
-
-    for intent, pattern, template in INTENT_PATTERNS:
-        if pattern.search(msg):
-            target = "20" if "professional" in msg.lower() else "15"
-            reply = template.format(target=target)
-            return ChatResponse(reply=reply, intent=intent)
-
-    return ChatResponse(
-        reply="I can help with savings, debt payoff, goals, budgeting, rewards, and retirement planning. "
-        "Try asking about one of these topics!",
-        intent="general",
-    )
+    except Exception as e:
+        return ChatResponse(
+            reply=f"Failed to connect to Gemini API: {str(e)}",
+            intent="connection_error",
+        )
